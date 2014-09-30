@@ -28,15 +28,19 @@ void setup() {
   eeprom_erase();
   delay(500);
   
-  eeprom_write( 31, 17);
-  eeprom_write( 12, 24);
-  eeprom_write( 25, 98);
-  eeprom_write( 43, 117);
+  eeprom_write_all( 99);
+  delay(1000);
+  
+  //eeprom_write( 1, 10);
+  //eeprom_write( 17, 24);
+  eeprom_write( 33, 1);
+  //eeprom_write( 49, 111);
   
   delay(500);
   
   Serial.flush();
   Serial.println("------------------------- EEPROM Contents ---------------------------");
+  
 }
 
 void loop()
@@ -310,6 +314,68 @@ void eeprom_write( uint8_t address, uint16_t value)
   digitalWrite( CS_PIN, LOW);  
 
   eeprom_write_disable();
+}
+
+void eeprom_write_all(uint16_t value)
+{
+  eeprom_write_enable();
+  
+  digitalWrite( CS_PIN, HIGH);
+
+  /* Send start bit*/
+  digitalWrite( DI_PIN, HIGH);
+  delay(SK_LOW_TIME);
+  digitalWrite( SK_PIN, HIGH);
+  delay(SK_HIGH_TIME);
+  digitalWrite( SK_PIN, LOW);
+  delay(SK_LOW_TIME);
+
+  /* Send 0*/
+  digitalWrite( DI_PIN, LOW);
+  delay(SK_LOW_TIME);
+  digitalWrite( SK_PIN, HIGH);
+  delay(SK_HIGH_TIME);
+  digitalWrite( SK_PIN, LOW);
+  delay(SK_LOW_TIME);
+
+  /* Send 0 */
+  digitalWrite( SK_PIN, HIGH);
+  delay(SK_HIGH_TIME);
+  digitalWrite( SK_PIN, LOW);
+  delay(SK_LOW_TIME);
+
+  /* Send 0 */
+  digitalWrite( DI_PIN, LOW);
+  delay(SK_LOW_TIME);
+  digitalWrite( SK_PIN, HIGH);
+  delay(SK_HIGH_TIME);
+  digitalWrite( SK_PIN, LOW);
+  delay(SK_LOW_TIME);
+
+  /* Send 1*/
+  digitalWrite( DI_PIN, HIGH);
+  delay(SK_LOW_TIME);
+  digitalWrite( SK_PIN, HIGH);
+  delay(SK_HIGH_TIME);
+  digitalWrite( SK_PIN, LOW);
+  
+  /* Send the value to write */
+  eeprom_send_data( value);
+  
+  /* Wait for erase to finish */
+  digitalWrite( CS_PIN, LOW);  
+  delay(3 * SK_LOW_TIME);
+  digitalWrite( CS_PIN, HIGH);  
+  while (digitalRead(DO_PIN) == LOW) {
+    Serial.println("EEPROM busy");
+    delay(50);
+  }
+  delay(2 * SK_HIGH_TIME);
+  
+  digitalWrite( CS_PIN, LOW);    
+  
+  eeprom_write_disable();
+  
 }
 
 void eeprom_send_byte(uint8_t byte_out)
